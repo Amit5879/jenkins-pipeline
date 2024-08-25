@@ -40,4 +40,11 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+            mail to: "amitkafe5@gmail.com",
+                 subject: "Build Status: Successful",
+                 body: "The build and deployment process was successful."
+        }
+    }
 }
