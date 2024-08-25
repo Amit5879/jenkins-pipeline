@@ -1,50 +1,77 @@
 pipeline {
     agent any
     environment {
-        DIRECTORY_PATH = '/Users/amitkafe/Documents/university/year 2/trimester 2/SIT223/task 5.1' 
-        TESTING_ENVIRONMENT = 'practicetest'
-        PRODUCTION_ENVIRONMENT = 'Amit-Production' // Using my name as the production environment
+        DIRECTORY_PATH = '/Users/amitkafe/Documents/university/year 2/trimester 2/SIT223/task 5.1'
+        STAGING_ENVIRONMENT = 'AWS-EC2-Staging'
+        PRODUCTION_ENVIRONMENT = 'AWS-EC2-Production'
+        RECIPIENT_EMAIL = "amitkafe5@gmail.com"
     }
     stages {
         stage('Build') {
             steps {
-                echo "Fetch the source code from the directory path: ${env.DIRECTORY_PATH}"
-                echo "Compile the code and generate any necessary artifacts"
+                echo 'Stage 1: Build - Building the code using Maven'
+                echo 'Tool: Maven'
             }
         }
-        stage('Test') {
+        stage('Unit and Integration Tests') {
             steps {
-                echo 'Running unit tests'
-                echo 'Running integration tests'
+                echo 'Stage 2: Unit and Integration Tests - Running unit and integration tests using JUnit'
+                echo 'Tool: JUnit'
             }
         }
-        stage('Code Quality Check') {
+        stage('Code Analysis') {
             steps {
-                echo 'Checking the quality of the code'
+                echo 'Stage 3: Code Analysis - Analyzing code quality using SonarQube'
+                echo 'Tool: SonarQube'
             }
         }
-        stage('Deploy') {
+        stage('Security Scan') {
             steps {
-                echo "Deploy the application to the testing environment: ${env.TESTING_ENVIRONMENT}"
+                echo 'Stage 4: Security Scan - Scanning code for vulnerabilities using OWASP ZAP'
+                echo 'Tool: OWASP ZAP'
             }
         }
-        stage('Approval') {
+        stage('Deploy to Staging') {
             steps {
-                echo 'Waiting for manual approval...'
-                sleep 10 
+                echo 'Stage 5: Deploy to Staging - Deploying to the staging environment'
+                echo "Environment: ${env.STAGING_ENVIRONMENT}"
+            }
+        }
+        stage('Integration Tests on Staging') {
+            steps {
+                echo 'Stage 6: Integration Tests on Staging - Running integration tests on the staging environment'
+                echo 'Tool: JUnit'
             }
         }
         stage('Deploy to Production') {
             steps {
-                echo "Deploying the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
+                echo 'Stage 7: Deploy to Production - Deploying to the production environment'
+                echo "Environment: ${env.PRODUCTION_ENVIRONMENT}"
             }
         }
     }
     post {
+        always {
+            script {
+                if (currentBuild.result == null || currentBuild.result == 'SUCCESS') {
+                    def logFile = "${env.WORKSPACE}/pipeline-log.log"
+                    writeFile file: logFile, text: currentBuild.rawBuild.getLog(50).join("\n")
+
+                    if (currentBuild.rawBuild.getExecutedStages().find { it.name == 'Unit and Integration Tests' || it.name == 'Security Scan' }) {
+                        emailext to: "${env.RECIPIENT_EMAIL}",
+                                 subject: "Stage Status: ${currentBuild.result}",
+                                 body: "The stage completed with status: ${currentBuild.result}",
+                                 attachmentsPattern: logFile,
+                                 attachLog: true
+                    }
+                }
+            }
+        }
         success {
-            mail to: "amitkafe5@gmail.com",
-                 subject: "Build Status: Successful",
-                 body: "The build and deployment process was successful."
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed!"
         }
     }
 }
