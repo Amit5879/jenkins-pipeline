@@ -18,6 +18,27 @@ pipeline {
                 echo 'Stage 2: Unit and Integration Tests - Running unit and integration tests using JUnit'
                 echo 'Tool: JUnit'
             }
+            post {
+                always {
+                    echo "Unit and Integration Tests stage finished. Sending notification..."
+                }
+                success {
+                    emailext (
+                        to: "${env.RECIPIENT_EMAIL}",
+                        subject: "Success: Unit and Integration Tests Stage - ${currentBuild.fullDisplayName}",
+                        body: "The Unit and Integration Tests stage has completed successfully.",
+                        attachLog: true
+                    )
+                }
+                failure {
+                    emailext (
+                        to: "${env.RECIPIENT_EMAIL}",
+                        subject: "Failure: Unit and Integration Tests Stage - ${currentBuild.fullDisplayName}",
+                        body: "The Unit and Integration Tests stage has failed.",
+                        attachLog: true
+                    )
+                }
+            }
         }
         stage('Code Analysis') {
             steps {
@@ -29,6 +50,27 @@ pipeline {
             steps {
                 echo 'Stage 4: Security Scan - Scanning code for vulnerabilities using OWASP ZAP'
                 echo 'Tool: OWASP ZAP'
+            }
+            post {
+                always {
+                    echo "Security Scan stage finished. Sending notification..."
+                }
+                success {
+                    emailext (
+                        to: "${env.RECIPIENT_EMAIL}",
+                        subject: "Success: Security Scan Stage - ${currentBuild.fullDisplayName}",
+                        body: "The Security Scan stage has completed successfully.",
+                        attachLog: true
+                    )
+                }
+                failure {
+                    emailext (
+                        to: "${env.RECIPIENT_EMAIL}",
+                        subject: "Failure: Security Scan Stage - ${currentBuild.fullDisplayName}",
+                        body: "The Security Scan stage has failed.",
+                        attachLog: true
+                    )
+                }
             }
         }
         stage('Deploy to Staging') {
@@ -52,26 +94,23 @@ pipeline {
     }
     post {
         always {
-            script {
-                if (currentBuild.result == null || currentBuild.result == 'SUCCESS') {
-                    def logFile = "${env.WORKSPACE}/pipeline-log.log"
-                    writeFile file: logFile, text: currentBuild.rawBuild.getLog(50).join("\n")
-
-                    if (currentBuild.rawBuild.getExecutedStages().find { it.name == 'Unit and Integration Tests' || it.name == 'Security Scan' }) {
-                        emailext to: "${env.RECIPIENT_EMAIL}",
-                                 subject: "Stage Status: ${currentBuild.result}",
-                                 body: "The stage completed with status: ${currentBuild.result}",
-                                 attachmentsPattern: logFile,
-                                 attachLog: true
-                    }
-                }
-            }
+            echo "Pipeline finished. Sending final notification..."
         }
         success {
-            echo "Pipeline completed successfully!"
+            emailext (
+                to: "${env.RECIPIENT_EMAIL}",
+                subject: "Pipeline Success: ${currentBuild.fullDisplayName}",
+                body: "Pipeline ${currentBuild.fullDisplayName} has completed successfully.",
+                attachLog: true
+            )
         }
         failure {
-            echo "Pipeline failed!"
+            emailext (
+                to: "${env.RECIPIENT_EMAIL}",
+                subject: "Pipeline Failure: ${currentBuild.fullDisplayName}",
+                body: "Pipeline ${currentBuild.fullDisplayName} has failed.",
+                attachLog: true
+            )
         }
     }
 }
