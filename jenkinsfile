@@ -95,16 +95,14 @@ pipeline {
             emailext(
                 to: "amitkafe5@gmail.com",
                 subject: "Build Status: Successful",
-                body: "The entire pipeline execution was successful.",
-                attachLog: true
+                body: "The entire pipeline execution was successful."
             )
         }
         failure {
             emailext(
                 to: "amitkafe5@gmail.com",
                 subject: "Build Status: Failed",
-                body: "The pipeline execution failed.",
-                attachLog: true
+                body: "The pipeline execution failed."
             )
         }
     }
