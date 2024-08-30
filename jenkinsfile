@@ -71,14 +71,36 @@ pipeline {
     }
     post {
         success {
-            mail to: "amitkafe5@gmail.com",
+            // Create a txt file with the success message
+            script {
+                writeFile file: 'build_status.txt', text: 'The entire pipeline execution was successful.'
+            }
+            // Archive the txt file
+            archiveArtifacts artifacts: 'build_status.txt'
+            
+            // Send the email with the attachment
+            emailext(
+                to: "amitkafe5@gmail.com",
                 subject: "Build Status: Successful",
-                body: "The entire pipeline execution was successful."
+                body: "The entire pipeline execution was successful. See attached file for details.",
+                attachmentsPattern: 'build_status.txt'
+            )
         }
         failure {
-            mail to: "amitkafe5@gmail.com",
+            // Create a txt file with the failure message
+            script {
+                writeFile file: 'build_status.txt', text: 'The pipeline execution failed.'
+            }
+            // Archive the txt file
+            archiveArtifacts artifacts: 'build_status.txt'
+            
+            // Send the email with the attachment
+            emailext(
+                to: "amitkafe5@gmail.com",
                 subject: "Build Status: Failed",
-                body: "The pipeline execution failed."
+                body: "The pipeline execution failed. See attached file for details.",
+                attachmentsPattern: 'build_status.txt'
+            )
         }
     }
 }
