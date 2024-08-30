@@ -4,18 +4,36 @@ pipeline {
         DIRECTORY_PATH = '/Users/amitkafe/Documents/university/year 2/trimester 2/SIT223/task 5.1' 
         TESTING_ENVIRONMENT = 'practicetest'
         PRODUCTION_ENVIRONMENT = 'Amit-Production'
+        LOG_FILE = 'pipeline_log.txt'
+        COMPRESSED_LOG_FILE = 'pipeline_log.zip'
     }
     stages {
+        // Stage 1: Build - Using Maven to compile and package the code
         stage('Build') {
             steps {
-                echo "Fetch the source code from the directory path: ${env.DIRECTORY_PATH}"
-                echo "Compile the code and generate any necessary artifacts"
+                script {
+                    // Maven is a build automation tool commonly used in Java projects.
+                    def logMessage = "Fetch the source code from the directory path: ${env.DIRECTORY_PATH}\n"
+                    logMessage += "Build the code using Maven, compile and generate necessary artifacts\n"
+                    writeFile file: env.LOG_FILE, text: logMessage, append: true
+                    echo logMessage
+                    // Example Maven command
+                    sh 'mvn clean install'
+                }
             }
         }
+
+        // Stage 2: Unit and Integration Tests - Running tests using JUnit and Selenium
         stage('Test') {
             steps {
-                echo 'Running unit tests'
-                echo 'Running integration tests'
+                script {
+                    // JUnit for unit tests, and Selenium for integration tests.
+                    def logMessage = 'Running unit tests using JUnit\nRunning integration tests using Selenium\n'
+                    writeFile file: env.LOG_FILE, text: logMessage, append: true
+                    echo logMessage
+                    // Example test command
+                    sh 'mvn test'
+                }
             }
             post {
                 success {
@@ -30,14 +48,32 @@ pipeline {
                 }
             }
         }
+
+        // Stage 3: Code Analysis - Analyze the code using SonarQube
         stage('Code Quality Check') {
             steps {
-                echo 'Checking the quality of the code'
+                script {
+                    // SonarQube is a popular tool for static code analysis.
+                    def logMessage = 'Checking the code quality using SonarQube\n'
+                    writeFile file: env.LOG_FILE, text: logMessage, append: true
+                    echo logMessage
+                    // Example SonarQube analysis command
+                    sh 'mvn sonar:sonar'
+                }
             }
         }
+
+        // Stage 4: Security Scan - Scan for vulnerabilities using OWASP ZAP
         stage('Security Scan') {
             steps {
-                echo 'Running security scans'
+                script {
+                    // OWASP ZAP is a tool used for security scanning of web applications.
+                    def logMessage = 'Running security scans using OWASP ZAP\n'
+                    writeFile file: env.LOG_FILE, text: logMessage, append: true
+                    echo logMessage
+                    // Example security scan command (would typically be customized to your project)
+                    sh 'zap-cli quick-scan http://localhost:8080'
+                }
             }
             post {
                 success {
@@ -52,33 +88,73 @@ pipeline {
                 }
             }
         }
+
+        // Stage 5: Deploy to Staging - Deploy the application to a testing environment (AWS EC2)
         stage('Deploy') {
             steps {
-                echo "Deploy the application to the testing environment: ${env.TESTING_ENVIRONMENT}"
+                script {
+                    // Deploying to a staging environment such as AWS EC2.
+                    def logMessage = "Deploy the application to the staging environment: ${env.TESTING_ENVIRONMENT}\n"
+                    writeFile file: env.LOG_FILE, text: logMessage, append: true
+                    echo logMessage
+                    // Example deployment command (would be specific to your environment)
+                    sh 'scp target/app.war ec2-user@staging-server:/var/www/'
+                }
             }
         }
+
+        // Stage 6: Approval - Manual approval step before deploying to production
         stage('Approval') {
             steps {
-                echo 'Waiting for manual approval...'
-                sleep 10 
+                script {
+                    def logMessage = 'Waiting for manual approval before deploying to production...\n'
+                    writeFile file: env.LOG_FILE, text: logMessage, append: true
+                    echo logMessage
+                    // Simulating manual approval wait with a sleep
+                    sleep 10 
+                }
             }
         }
+
+        // Stage 7: Deploy to Production - Deploy the application to the production environment (AWS EC2)
         stage('Deploy to Production') {
             steps {
-                echo "Deploying the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
+                script {
+                    // Deploying to a production environment such as AWS EC2.
+                    def logMessage = "Deploying the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}\n"
+                    writeFile file: env.LOG_FILE, text: logMessage, append: true
+                    echo logMessage
+                    // Example deployment command
+                    sh 'scp target/app.war ec2-user@production-server:/var/www/'
+                }
             }
         }
     }
+
     post {
+        always {
+            // Compress the log file at the end
+            zip zipFile: env.COMPRESSED_LOG_FILE, archive: true, glob: env.LOG_FILE
+        }
         success {
-            mail to: "amitkafe5@gmail.com",
+            // Send an email with the compressed log file attached
+            emailext(
+                to: "amitkafe5@gmail.com",
                 subject: "Build Status: Successful",
-                body: "The entire pipeline execution was successful."
+                body: "The entire pipeline execution was successful. The compressed log is attached.",
+                attachmentsPattern: env.COMPRESSED_LOG_FILE,
+                attachLog: true
+            )
         }
         failure {
-            mail to: "amitkafe5@gmail.com",
+            // Send an email with the compressed log file attached
+            emailext(
+                to: "amitkafe5@gmail.com",
                 subject: "Build Status: Failed",
-                body: "The pipeline execution failed."
+                body: "The pipeline execution failed. The compressed log is attached.",
+                attachmentsPattern: env.COMPRESSED_LOG_FILE,
+                attachLog: true
+            )
         }
     }
 }
