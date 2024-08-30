@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DIRECTORY_PATH = '/Users/amitkafe/Documents/university/year 2/trimester 2/SIT223/task 5.1' 
+        DIRECTORY_PATH = '/Users/amitkafe/Documents/university/year 2/trimester 2/SIT223/task 6.1' 
         TESTING_ENVIRONMENT = 'practicetest'
         PRODUCTION_ENVIRONMENT = 'Amit-Production'
         LOG_FILE = 'pipeline_log.txt'
