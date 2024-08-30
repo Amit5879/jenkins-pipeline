@@ -1,6 +1,5 @@
 pipeline {
     agent any
-    }
     stages {
         // Stage 1: Build - Compile the code and generate artifacts
         stage('Build') {
@@ -109,4 +108,4 @@ pipeline {
             )
         }
     }
-
+}
