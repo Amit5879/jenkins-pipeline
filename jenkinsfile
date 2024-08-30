@@ -1,9 +1,5 @@
 pipeline {
     agent any
-    environment {
-        DIRECTORY_PATH = '/Users/amitkafe/Documents/university/year 2/trimester 2/SIT223/task 5.1' 
-        TESTING_ENVIRONMENT = 'practicetest'
-        PRODUCTION_ENVIRONMENT = 'Amit-Production'
     }
     stages {
         // Stage 1: Build - Compile the code and generate artifacts
@@ -17,8 +13,8 @@ pipeline {
         // Stage 2: Test - Run unit and integration tests
         stage('Test') {
             steps {
-                echo 'Running unit tests'
-                echo 'Running integration tests'
+                echo 'Running unit tests using JUnit'
+                echo 'Running integration tests using NUnit'
             }
             post {
                 success {
@@ -26,6 +22,7 @@ pipeline {
                         to: "amitkafe5@gmail.com",
                         subject: "Test Stage: Successful",
                         body: "The Test stage was successful."
+                        attachLog: true
                     )
                 }
                 failure {
@@ -33,6 +30,7 @@ pipeline {
                         to: "amitkafe5@gmail.com",
                         subject: "Test Stage: Failed",
                         body: "The Test stage failed."
+                        attachLog: true
                     )
                 }
             }
@@ -41,7 +39,7 @@ pipeline {
         // Stage 3: Code Quality Check - Check the quality of the code
         stage('Code Quality Check') {
             steps {
-                echo 'Checking the quality of the code'
+                echo 'Checking the quality of the code using Sonar'
             }
         }
 
@@ -56,6 +54,7 @@ pipeline {
                         to: "amitkafe5@gmail.com",
                         subject: "Security Scan: Successful",
                         body: "The Security Scan was successful."
+                        attachLog: true
                     )
                 }
                 failure {
@@ -63,6 +62,7 @@ pipeline {
                         to: "amitkafe5@gmail.com",
                         subject: "Security Scan: Failed",
                         body: "The Security Scan failed."
+                        attachLog: true
                     )
                 }
             }
@@ -109,4 +109,4 @@ pipeline {
             )
         }
     }
-}
+
