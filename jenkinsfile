@@ -22,7 +22,7 @@ pipeline {
                         to: "amitkafe5@gmail.com",
                         subject: "Test Stage: Successful",
                         body: "The Test stage was successful."
-                        attachLog: true
+                        attatchLog: true
                     )
                 }
                 failure {
