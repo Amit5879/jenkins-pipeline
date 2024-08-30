@@ -1,29 +1,21 @@
 pipeline {
     agent any
     environment {
-        DIRECTORY_PATH = '/Users/amitkafe/Documents/university/year 2/trimester 2/SIT223/task 6.1' 
+        DIRECTORY_PATH = '/Users/amitkafe/Documents/university/year 2/trimester 2/SIT223/task 5.1' 
         TESTING_ENVIRONMENT = 'practicetest'
         PRODUCTION_ENVIRONMENT = 'Amit-Production'
-        LOG_FILE = 'pipeline_log.txt'
     }
     stages {
         stage('Build') {
             steps {
-                script {
-                    def logMessage = "Fetch the source code from the directory path: ${env.DIRECTORY_PATH}\n"
-                    logMessage += "Compile the code and generate any necessary artifacts\n"
-                    writeFile file: env.LOG_FILE, text: logMessage, append: true
-                    echo logMessage
-                }
+                echo "Fetch the source code from the directory path: ${env.DIRECTORY_PATH}"
+                echo "Compile the code and generate any necessary artifacts"
             }
         }
         stage('Test') {
             steps {
-                script {
-                    def logMessage = 'Running unit tests\nRunning integration tests\n'
-                    writeFile file: env.LOG_FILE, text: logMessage, append: true
-                    echo logMessage
-                }
+                echo 'Running unit tests'
+                echo 'Running integration tests'
             }
             post {
                 success {
@@ -40,20 +32,12 @@ pipeline {
         }
         stage('Code Quality Check') {
             steps {
-                script {
-                    def logMessage = 'Checking the quality of the code\n'
-                    writeFile file: env.LOG_FILE, text: logMessage, append: true
-                    echo logMessage
-                }
+                echo 'Checking the quality of the code'
             }
         }
         stage('Security Scan') {
             steps {
-                script {
-                    def logMessage = 'Running security scans\n'
-                    writeFile file: env.LOG_FILE, text: logMessage, append: true
-                    echo logMessage
-                }
+                echo 'Running security scans'
             }
             post {
                 success {
@@ -70,55 +54,31 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                script {
-                    def logMessage = "Deploy the application to the testing environment: ${env.TESTING_ENVIRONMENT}\n"
-                    writeFile file: env.LOG_FILE, text: logMessage, append: true
-                    echo logMessage
-                }
+                echo "Deploy the application to the testing environment: ${env.TESTING_ENVIRONMENT}"
             }
         }
         stage('Approval') {
             steps {
-                script {
-                    def logMessage = 'Waiting for manual approval...\n'
-                    writeFile file: env.LOG_FILE, text: logMessage, append: true
-                    echo logMessage
-                    sleep 10 
-                }
+                echo 'Waiting for manual approval...'
+                sleep 10 
             }
         }
         stage('Deploy to Production') {
             steps {
-                script {
-                    def logMessage = "Deploying the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}\n"
-                    writeFile file: env.LOG_FILE, text: logMessage, append: true
-                    echo logMessage
-                }
+                echo "Deploying the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
             }
         }
     }
     post {
-        always {
-            // Archive the log file at the end
-            archiveArtifacts artifacts: env.LOG_FILE
-        }
         success {
-            // Send an email with the log file attached
-            emailext(
-                to: "amitkafe5@gmail.com",
+            mail to: "amitkafe5@gmail.com",
                 subject: "Build Status: Successful",
-                body: "The entire pipeline execution was successful. Please find the attached log file.",
-                attachmentsPattern: env.LOG_FILE
-            )
+                body: "The entire pipeline execution was successful."
         }
         failure {
-            // Send an email with the log file attached
-            emailext(
-                to: "amitkafe5@gmail.com",
+            mail to: "amitkafe5@gmail.com",
                 subject: "Build Status: Failed",
-                body: "The pipeline execution failed. Please find the attached log file.",
-                attachmentsPattern: env.LOG_FILE
-            )
+                body: "The pipeline execution failed."
         }
     }
 }
