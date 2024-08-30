@@ -6,12 +6,15 @@ pipeline {
         PRODUCTION_ENVIRONMENT = 'Amit-Production'
     }
     stages {
+        // Stage 1: Build - Compile the code and generate artifacts
         stage('Build') {
             steps {
                 echo "Fetch the source code from the directory path: ${env.DIRECTORY_PATH}"
                 echo "Compile the code and generate any necessary artifacts"
             }
         }
+
+        // Stage 2: Test - Run unit and integration tests
         stage('Test') {
             steps {
                 echo 'Running unit tests'
@@ -19,66 +22,91 @@ pipeline {
             }
             post {
                 success {
-                    mail to: "amitkafe5@gmail.com",
+                    emailext(
+                        to: "amitkafe5@gmail.com",
                         subject: "Test Stage: Successful",
                         body: "The Test stage was successful."
+                    )
                 }
                 failure {
-                    mail to: "amitkafe5@gmail.com",
+                    emailext(
+                        to: "amitkafe5@gmail.com",
                         subject: "Test Stage: Failed",
                         body: "The Test stage failed."
+                    )
                 }
             }
         }
+
+        // Stage 3: Code Quality Check - Check the quality of the code
         stage('Code Quality Check') {
             steps {
                 echo 'Checking the quality of the code'
             }
         }
+
+        // Stage 4: Security Scan - Run security scans
         stage('Security Scan') {
             steps {
                 echo 'Running security scans'
             }
             post {
                 success {
-                    mail to: "amitkafe5@gmail.com",
+                    emailext(
+                        to: "amitkafe5@gmail.com",
                         subject: "Security Scan: Successful",
                         body: "The Security Scan was successful."
+                    )
                 }
                 failure {
-                    mail to: "amitkafe5@gmail.com",
+                    emailext(
+                        to: "amitkafe5@gmail.com",
                         subject: "Security Scan: Failed",
                         body: "The Security Scan failed."
+                    )
                 }
             }
         }
+
+        // Stage 5: Deploy to Testing - Deploy the application to the testing environment
         stage('Deploy') {
             steps {
                 echo "Deploy the application to the testing environment: ${env.TESTING_ENVIRONMENT}"
             }
         }
+
+        // Stage 6: Approval - Manual approval before deploying to production
         stage('Approval') {
             steps {
                 echo 'Waiting for manual approval...'
             }
         }
+
+        // Stage 7: Deploy to Production - Deploy the application to production
         stage('Deploy to Production') {
             steps {
                 echo "Deploying the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
             }
         }
     }
+
+    // Post actions: Send final status emails with logs attached
     post {
         success {
-            mail to: "amitkafe5@gmail.com",
+            emailext(
+                to: "amitkafe5@gmail.com",
                 subject: "Build Status: Successful",
-                body: "The entire pipeline execution was successful."
-                attatchLog: true
+                body: "The entire pipeline execution was successful.",
+                attachLog: true
+            )
         }
         failure {
-            mail to: "amitkafe5@gmail.com",
+            emailext(
+                to: "amitkafe5@gmail.com",
                 subject: "Build Status: Failed",
-                body: "The pipeline execution failed."
+                body: "The pipeline execution failed.",
+                attachLog: true
+            )
         }
     }
 }
