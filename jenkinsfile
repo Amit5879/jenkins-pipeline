@@ -16,20 +16,13 @@ pipeline {
                 echo 'Running integration tests using NUnit'
             }
             post {
-                success {
+                always {
                     emailext(
                         to: "amitkafe5@gmail.com",
-                        subject: "Test Stage: Successful",
-                        body: "The Test stage was successful.",
-                        attachLog: true, compressLog: true
-                    )
-                }
-                failure {
-                    emailext(
-                        to: "amitkafe5@gmail.com",
-                        subject: "Test Stage: Failed",
-                        body: "The Test stage failed.",
-                        attachLog: true, compressLog: true
+                        subject: "Test Stage: Completed",
+                        body: "The Test stage has completed. Please find the attached logs for details.",
+                        attachLog: true,
+                        compressLog: true
                     )
                 }
             }
@@ -48,20 +41,13 @@ pipeline {
                 echo 'Running security scans'
             }
             post {
-                success {
+                always {
                     emailext(
                         to: "amitkafe5@gmail.com",
-                        subject: "Security Scan: Successful",
-                        body: "The Security Scan was successful.",
-                        attachLog: true, compressLog: true
-                    )
-                }
-                failure {
-                    emailext(
-                        to: "amitkafe5@gmail.com",
-                        subject: "Security Scan: Failed",
-                        body: "The Security Scan failed.",
-                        attachLog: true, compressLog: true
+                        subject: "Security Scan Stage: Completed",
+                        body: "The Security Scan stage has completed. Please find the attached logs for details.",
+                        attachLog: true,
+                        compressLog: true
                     )
                 }
             }
@@ -89,20 +75,15 @@ pipeline {
         }
     }
 
-    // Post actions: Send final status emails with logs attached
+    // Post actions: Send final status emails with logs attached, always
     post {
-        success {
+        always {
             emailext(
                 to: "amitkafe5@gmail.com",
-                subject: "Build Status: Successful",
-                body: "The entire pipeline execution was successful."
-            )
-        }
-        failure {
-            emailext(
-                to: "amitkafe5@gmail.com",
-                subject: "Build Status: Failed",
-                body: "The pipeline execution failed."
+                subject: "Pipeline Execution Status",
+                body: "The entire pipeline execution has completed. Please find the attached logs for details.",
+                attachLog: true,
+                compressLog: true
             )
         }
     }
